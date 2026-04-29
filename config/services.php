@@ -45,4 +45,13 @@ return [
         'timeout' => env('CHACHA20_SERVICE_TIMEOUT', 30),
     ],
 
+    // ─────────────────────────────────────────────
+    // Caesar Cipher Python Microservice
+    // Di lokal dev, gunakan http://127.0.0.1:8002
+    // ─────────────────────────────────────────────
+    'caesar' => [
+        'url'     => env('CAESAR_SERVICE_URL', 'http://127.0.0.1:8002'),
+        'timeout' => env('CAESAR_SERVICE_TIMEOUT', 30),
+    ],
+
 ];

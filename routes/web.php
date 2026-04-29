@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ChaCha20Controller;
+use App\Http\Controllers\CaesarController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('chacha20.index'));
@@ -20,5 +21,17 @@ Route::prefix('chacha20')->name('chacha20.')->group(function () {
 
     // Khusus untuk State Matrix Viewer — selalu mengembalikan round_logs
     Route::post('/steps',   [ChaCha20Controller::class, 'steps'])->name('steps');
+
+});
+
+// ─────────────────────────────────────────────
+//  Caesar Cipher Simulator (Tim Caesar)
+// ─────────────────────────────────────────────
+Route::prefix('caesar')->name('caesar.')->group(function () {
+
+    Route::get('/', [CaesarController::class, 'index'])->name('index');
+
+    Route::post('/encrypt', [CaesarController::class, 'encrypt'])->name('encrypt');
+    Route::post('/decrypt', [CaesarController::class, 'decrypt'])->name('decrypt');
 
 });
