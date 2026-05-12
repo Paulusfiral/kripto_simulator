@@ -27,7 +27,7 @@ class CaesarController extends Controller
     public function index()
     {
         return view('caesar.index', [
-            'apiUrl' => config('services.caesar.url', 'http://127.0.0.1:8002'),
+            'apiUrl' => config('services.caesar.url'),
         ]);
     }
 

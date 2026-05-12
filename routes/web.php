@@ -4,7 +4,9 @@ use App\Http\Controllers\ChaCha20Controller;
 use App\Http\Controllers\CaesarController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => redirect()->route('chacha20.index'));
+Route::get('/', function () {
+    return view('home');
+});
 
 // ─────────────────────────────────────────────
 //  ChaCha20 Simulator

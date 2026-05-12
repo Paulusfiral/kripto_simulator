@@ -1,44 +1,72 @@
 """
-Caesar Cipher — Pure Python Implementation
-
-TODO: Tim Caesar Cipher, implementasikan algoritma di sini!
-
-Referensi:
-  - Caesar Cipher adalah substitution cipher klasik
-  - Setiap huruf digeser sebanyak `shift` posisi dalam alfabet
-  - Contoh: shift=3 → A→D, B→E, C→F, ...
+Caesar Cipher — FastAPI Microservice
 """
 
+from fastapi import FastAPI
+from pydantic import BaseModel
 
+app = FastAPI()
+
+# =========================
+# DATA MODEL (REQUEST BODY)
+# =========================
+class EncryptRequest(BaseModel):
+    plaintext: str
+    shift: int = 3
+
+class DecryptRequest(BaseModel):
+    ciphertext: str
+    shift: int = 3
+
+
+# =========================
+# ALGORITMA CAESAR
+# =========================
 def caesar_encrypt(plaintext: str, shift: int = 3) -> str:
-    """
-    Enkripsi plaintext menggunakan Caesar Cipher.
+    result = ""
 
-    Args:
-        plaintext: Teks yang akan dienkripsi
-        shift:     Jumlah pergeseran huruf (default: 3)
+    for char in plaintext:
+        if char.isalpha():
+            base = 65 if char.isupper() else 97
+            result += chr((ord(char) - base + shift) % 26 + base)
+        else:
+            result += char
 
-    Returns:
-        Ciphertext hasil enkripsi
-
-    TODO: Implementasikan logika enkripsi Caesar Cipher di sini!
-    """
-    # TODO: Ganti kode di bawah dengan implementasi kalian
-    raise NotImplementedError("Belum diimplementasikan — kerjakan di sini!")
+    return result
 
 
 def caesar_decrypt(ciphertext: str, shift: int = 3) -> str:
-    """
-    Dekripsi ciphertext menggunakan Caesar Cipher.
+    return caesar_encrypt(ciphertext, -shift)
 
-    Args:
-        ciphertext: Teks yang akan didekripsi
-        shift:      Jumlah pergeseran huruf (harus sama saat enkripsi)
 
-    Returns:
-        Plaintext hasil dekripsi
+# =========================
+# ENDPOINT API
+# =========================
+@app.get("/")
+def root():
+    return {
+        "service": "Caesar Cipher Microservice",
+        "status": "running"
+    }
 
-    TODO: Implementasikan logika dekripsi Caesar Cipher di sini!
-    """
-    # TODO: Ganti kode di bawah dengan implementasi kalian
-    raise NotImplementedError("Belum diimplementasikan — kerjakan di sini!")
+
+@app.post("/encrypt")
+def encrypt(req: EncryptRequest):
+    result = caesar_encrypt(req.plaintext, req.shift)
+
+    return {
+        "plaintext": req.plaintext,
+        "shift": req.shift,
+        "ciphertext": result
+    }
+
+
+@app.post("/decrypt")
+def decrypt(req: DecryptRequest):
+    result = caesar_decrypt(req.ciphertext, req.shift)
+
+    return {
+        "ciphertext": req.ciphertext,
+        "shift": req.shift,
+        "plaintext": result
+    }
