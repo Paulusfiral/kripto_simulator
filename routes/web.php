@@ -45,6 +45,8 @@ Route::prefix('caesar')->name('caesar.')->group(function () {
     Route::post('/encrypt',     [CaesarController::class, 'encrypt'])->name('encrypt');
     Route::post('/decrypt',     [CaesarController::class, 'decrypt'])->name('decrypt');
     Route::post('/brute-force', [CaesarController::class, 'bruteForce'])->name('brute-force');
+    Route::post('/transform', [CaesarController::class, 'transform'])->name('transform');
+    Route::post('/spelling-alphabet', [CaesarController::class, 'spellingAlphabet'])->name('spelling-alphabet');
     Route::get('/shift-table',  [CaesarController::class, 'shiftTable'])->name('shift-table');
 
 });

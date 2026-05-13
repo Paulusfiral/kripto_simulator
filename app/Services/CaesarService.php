@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
  * CaesarService
  *
  * Berkomunikasi dengan Python FastAPI microservice untuk Caesar cipher.
- * Menggunakan URL yang sama dengan ChaCha20 (CHACHA20_SERVICE_URL).
+ * Menggunakan URL dari config services.caesar.
  */
 class CaesarService
 {
@@ -20,8 +20,8 @@ class CaesarService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('services.chacha20.url', 'http://python:8001'), '/');
-        $this->timeout = (int) config('services.chacha20.timeout', 30);
+        $this->baseUrl = rtrim(config('services.caesar.url', 'http://127.0.0.1:8002'), '/');
+        $this->timeout = (int) config('services.caesar.timeout', 30);
     }
 
     /**
@@ -29,10 +29,9 @@ class CaesarService
      */
     public function encrypt(string $plaintext, int $shift = 3, bool $showSteps = false): array
     {
-        return $this->post('/caesar/encrypt', [
-            'plaintext'  => $plaintext,
-            'shift'      => $shift,
-            'show_steps' => $showSteps,
+        return $this->post('/encrypt', [
+            'plaintext' => $plaintext,
+            'shift'     => $shift,
         ]);
     }
 
@@ -41,10 +40,9 @@ class CaesarService
      */
     public function decrypt(string $ciphertext, int $shift = 3, bool $showSteps = false): array
     {
-        return $this->post('/caesar/decrypt', [
+        return $this->post('/decrypt', [
             'ciphertext' => $ciphertext,
             'shift'      => $shift,
-            'show_steps' => $showSteps,
         ]);
     }
 
@@ -53,9 +51,15 @@ class CaesarService
      */
     public function bruteForce(string $ciphertext): array
     {
-        return $this->post('/caesar/brute-force', [
-            'ciphertext' => $ciphertext,
-        ]);
+        $decrypts = [];
+        for ($shift = 0; $shift < 26; $shift++) {
+            $result = $this->decrypt($ciphertext, $shift, false);
+            $decrypts[] = [
+                'shift'     => $shift,
+                'plaintext' => $result['plaintext'] ?? '',
+            ];
+        }
+        return ['results' => $decrypts];
     }
 
     /**
@@ -63,7 +67,81 @@ class CaesarService
      */
     public function shiftTable(int $shift = 3): array
     {
-        return $this->get("/caesar/shift-table?shift={$shift}");
+        $shift = $shift % 26;
+        $original = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $shifted = substr($original, $shift) . substr($original, 0, $shift);
+        $mapping = [];
+        for ($i = 0; $i < 26; $i++) {
+            $mapping[] = [
+                'from'     => $original[$i],
+                'to'       => $shifted[$i],
+                'position' => $i,
+            ];
+        }
+        return [
+            'shift'    => $shift,
+            'original' => $original,
+            'shifted'  => $shifted,
+            'mapping'  => $mapping,
+        ];
+    }
+
+    public function transformText(string $text, string $operation, string $search = '', string $replace = ''): array
+    {
+        switch ($operation) {
+            case 'reverse':
+                $transformed = $this->mbStrRev($text);
+                break;
+            case 'replace':
+                if ($search === '') {
+                    throw new ChaCha20Exception('Search string tidak boleh kosong untuk operasi replace.', code: 422);
+                }
+                $transformed = str_replace($search, $replace, $text);
+                break;
+            default:
+                throw new ChaCha20Exception('Operasi transformasi tidak dikenal.', code: 422);
+        }
+
+        return [
+            'operation'   => $operation,
+            'text'        => $text,
+            'transformed' => $transformed,
+        ];
+    }
+
+    public function spellingAlphabet(string $text): array
+    {
+        $alphabet = [
+            'A' => 'Alfa',   'B' => 'Bravo',   'C' => 'Charlie', 'D' => 'Delta',   'E' => 'Echo',
+            'F' => 'Foxtrot','G' => 'Golf',    'H' => 'Hotel',   'I' => 'India',   'J' => 'Juliett',
+            'K' => 'Kilo',   'L' => 'Lima',    'M' => 'Mike',    'N' => 'November','O' => 'Oscar',
+            'P' => 'Papa',   'Q' => 'Quebec',  'R' => 'Romeo',   'S' => 'Sierra',  'T' => 'Tango',
+            'U' => 'Uniform','V' => 'Victor',  'W' => 'Whiskey', 'X' => 'X-ray',   'Y' => 'Yankee',
+            'Z' => 'Zulu',   '0' => 'Zero',    '1' => 'One',     '2' => 'Two',     '3' => 'Three',
+            '4' => 'Four',   '5' => 'Five',    '6' => 'Six',     '7' => 'Seven',   '8' => 'Eight',
+            '9' => 'Nine',
+        ];
+
+        $mapping = [];
+        $characters = preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY);
+        foreach ($characters as $character) {
+            $upper = mb_strtoupper($character);
+            $mapping[] = [
+                'char' => $character,
+                'word' => $alphabet[$upper] ?? $character,
+            ];
+        }
+
+        return [
+            'text'    => $text,
+            'mapping' => $mapping,
+        ];
+    }
+
+    private function mbStrRev(string $string): string
+    {
+        $characters = preg_split('//u', $string, -1, PREG_SPLIT_NO_EMPTY);
+        return implode('', array_reverse($characters));
     }
 
     // ─────────────────────────────────────────────

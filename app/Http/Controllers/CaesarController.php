@@ -87,6 +87,52 @@ class CaesarController extends Controller
     }
 
     /**
+     * POST /caesar/transform
+     */
+    public function transform(Request $request): JsonResponse
+    {
+        $request->validate([
+            'text'      => ['required', 'string', 'min:1', 'max:10000'],
+            'operation' => ['required', 'string', 'in:replace,reverse'],
+            'search'    => ['nullable', 'string', 'max:100'],
+            'replace'   => ['nullable', 'string', 'max:100'],
+        ]);
+
+        try {
+            $result = $this->caesar->transformText(
+                $request->input('text'),
+                $request->input('operation'),
+                $request->input('search', ''),
+                $request->input('replace', ''),
+            );
+
+            return response()->json($result);
+        } catch (ChaCha20Exception $e) {
+            return $this->errorResponse($e);
+        }
+    }
+
+    /**
+     * POST /caesar/spelling-alphabet
+     */
+    public function spellingAlphabet(Request $request): JsonResponse
+    {
+        $request->validate([
+            'text' => ['required', 'string', 'min:1', 'max:10000'],
+        ]);
+
+        try {
+            $result = $this->caesar->spellingAlphabet(
+                $request->input('text'),
+            );
+
+            return response()->json($result);
+        } catch (ChaCha20Exception $e) {
+            return $this->errorResponse($e);
+        }
+    }
+
+    /**
      * GET /caesar/shift-table
      */
     public function shiftTable(Request $request): JsonResponse
