@@ -92,6 +92,12 @@ class CaesarService
             case 'reverse':
                 $transformed = $this->mbStrRev($text);
                 break;
+            case 'uppercase':
+                $transformed = mb_strtoupper($text);
+                break;
+            case 'lowercase':
+                $transformed = mb_strtolower($text);
+                break;
             case 'replace':
                 if ($search === '') {
                     throw new ChaCha20Exception('Search string tidak boleh kosong untuk operasi replace.', code: 422);

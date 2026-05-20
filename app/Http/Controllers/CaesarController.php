@@ -93,7 +93,7 @@ class CaesarController extends Controller
     {
         $request->validate([
             'text'      => ['required', 'string', 'min:1', 'max:10000'],
-            'operation' => ['required', 'string', 'in:replace,reverse'],
+            'operation' => ['required', 'string', 'in:replace,reverse,uppercase,lowercase'],
             'search'    => ['nullable', 'string', 'max:100'],
             'replace'   => ['nullable', 'string', 'max:100'],
         ]);

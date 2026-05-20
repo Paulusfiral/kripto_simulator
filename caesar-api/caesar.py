@@ -20,23 +20,42 @@ class DecryptRequest(BaseModel):
 
 
 # =========================
-# ALGORITMA CAESAR
+# ALGORITMA CAESAR (UPDATED: SUPPORTS LETTERS & NUMBERS)
 # =========================
 def caesar_encrypt(plaintext: str, shift: int = 3) -> str:
     result = ""
 
     for char in plaintext:
         if char.isalpha():
+            # Handle alphabetic characters (A-Z, a-z)
             base = 65 if char.isupper() else 97
             result += chr((ord(char) - base + shift) % 26 + base)
+        elif char.isdigit():
+            # Handle numeric characters (0-9)
+            result += chr((ord(char) - 48 + shift) % 10 + 48)
         else:
+            # Keep non-alphanumeric characters unchanged
             result += char
 
     return result
 
 
 def caesar_decrypt(ciphertext: str, shift: int = 3) -> str:
-    return caesar_encrypt(ciphertext, -shift)
+    result = ""
+
+    for char in ciphertext:
+        if char.isalpha():
+            # Handle alphabetic characters (A-Z, a-z)
+            base = 65 if char.isupper() else 97
+            result += chr((ord(char) - base - shift) % 26 + base)
+        elif char.isdigit():
+            # Handle numeric characters (0-9)
+            result += chr((ord(char) - 48 - shift) % 10 + 48)
+        else:
+            # Keep non-alphanumeric characters unchanged
+            result += char
+
+    return result
 
 
 # =========================
